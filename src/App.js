@@ -51,6 +51,7 @@ function App() {
   return (
     <div className="app">
       <h2>React CRUD</h2>
+      <div>test</div>
       <div className="user">
         <h2>Users</h2>
         <div className='input'>
