@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import {Button, Input, Radio, Space, Table, } from 'antd'
 import Column from 'antd/es/table/Column';
+import Search from 'antd/es/transfer/search';
 function App() {
   const [firstname, setFirstname] = useState("")
   const [lastname, setLastname] = useState("")
@@ -9,10 +10,38 @@ function App() {
   const [tel, setTel] = useState("")
   const [gender, setGender] = useState(1)
   const [id, setId] = useState(1)
+  const [isUpdate, setIsUpdate] = useState(false)
+  const [textSearch, setTextSearch] = useState("")
   const [user, setUser] = useState([])
-
+  // console.log(textSearch);
   const handleSubmit = ()=>{
     setId(id+1)
+    if(isUpdate){
+        user.map((item,index)=>{
+          if(item.id == id){
+            user[index].id = id
+            user[index].firstname = firstname
+            user[index].lastname = lastname
+            user[index].gender = gender
+            user[index].email = email
+            user[index].tel = tel
+          }
+        })
+        setUser([...user])
+    }else{
+      var dataUser = {
+        'id':id,
+        'firstname':firstname,
+        'lastname':lastname,
+        'email':email,
+        'tel':tel,
+        'gender':gender,
+      }
+      user.push(dataUser)
+      setUser([...user])
+    }
+    handleClear()
+    setIsUpdate(false)
     // var form = new FormData()
     // form.append("id",id)
     // form.append("firstname",firstname)
@@ -20,17 +49,6 @@ function App() {
     // form.append("gender",gender)
     // form.append("email",email)
     // form.append("tel",tel)
-    var dataUser = {
-      'id':id,
-      'firstname':firstname,
-      'lastname':lastname,
-      'email':email,
-      'tel':tel,
-      'gender':gender,
-    }
-    user.push(dataUser)
-    setUser([...user])
-    handleClear()
   }
   const handleClear = ()=>{
     setId(id+1)
@@ -39,19 +57,24 @@ function App() {
     setEmail("")
     setTel("")
     setGender(1)
+
   }
-  const handleEdit = (id)=>{
-    // console.log(id);
+  const handleEdit = (paramItem)=>{
+    console.log(paramItem);
+    setFirstname(paramItem.firstname)
+    setLastname(paramItem.lastname)
+    setEmail(paramItem.email)
+    setTel(paramItem.tel)
+    setId(paramItem.id)
+    setIsUpdate(true)
   }
   const handleDelete = (paramItem)=>{
-    console.log(paramItem);
-    var userTmp = user.filter((item)=>item.id !== paramItem.id)
+    var userTmp = user.filter((item)=>item.id !== paramItem)
     setUser([...userTmp])
   }
   return (
     <div className="app">
       <h2>React CRUD</h2>
-      <div>test</div>
       <div className="user">
         <h2>Users</h2>
         <div className='input'>
@@ -66,7 +89,7 @@ function App() {
         </Radio.Group>
         <Button type='primary' className='btn'
         onClick={handleSubmit}
-        >Submit
+        >{isUpdate ? "Update" : "Add"}
         </Button>
         {/* <Button danger className='btn'
         onClick={handleClear}
@@ -75,23 +98,77 @@ function App() {
         </div>
         <div className='datauser'>
           <h2>Data Users</h2>
+          <Search
+            onChange={(e)=>setTextSearch(e.target.value)}
+            style={{padding:10}}
+          />
           <Table
             dataSource={user}
             rowKey="id"
+            columns={[
+              {
+                title:"No",
+                dataIndex:"id",
+              },
+              {
+                title: "Firstname",
+                dataIndex: "firstname",
+                key: "fistname",
+                filteredValue:[textSearch],
+                onFilter: (value,record)=>{
+                  return(
+                   String(record.firstname).toLowerCase().includes(value.toLowerCase())||
+                   String(record.lastname).toLowerCase().includes(value.toLowerCase())
+                )}
+              },
+              {
+                title:"Lastname",
+                dataIndex:"lastname",
+              },
+              {
+                title:"Gender",
+                dataIndex:"gender",
+                render:(value)=> value == 1 ? "Male" : "Female"
+              },
+              {
+                title:"Email",
+                dataIndex:"email",
+              },
+              {
+                title:"Tel",
+                dataIndex:"tel",
+              },
+              {
+                title:"Action",
+                render:(record)=><Space>
+                  <Button type='primary' size="small" onClick={()=>handleEdit(record)}>Update</Button>  
+                  <Button danger size="small" onClick={()=>handleDelete(record.id)}>Delete</Button>  
+                </Space>
+              },
+            ]}
           >
-             <Column title="No"  dataIndex="id" key="id"  />
-             <Column title="First Name" dataIndex="firstname" key="firstname" />
+            
+             {/* <Column title="No"  dataIndex="id" key="id"  />
+             <Column 
+             title="First Name"
+             dataIndex="firstname"
+             key="firstname" 
+             defaultValue={textSearch}
+             onFilter={(value,record)=>{
+              return String(record.firstname).toLowerCase().includes(value.toLowerCase())
+             }}
+             />
              <Column title="Last Name" dataIndex="lastname" key="lastname" />
              <Column title="Gender" dataIndex="gender" key="gender" render={(value)=>(value === 1 ? "Male" : "Female" )} />
              <Column title="Email" dataIndex="email" key="email" />
              <Column title="Tel" dataIndex="tel" key="tel" />      
              <Column title="Action" render={(value,record) => 
              <Space>
-                <Button type='primary' size="small" onClick={()=>handleEdit(id)}>Edit</Button>  
+                <Button type='primary' size="small" onClick={()=>handleEdit(record)}>Update</Button>  
                 <Button danger size="small" onClick={()=>handleDelete(record.id)}>Delete</Button>  
              </Space>
             } 
-             />      
+             />       */}
  
           </Table>
         </div>
